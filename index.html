@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Oi&family=Tektur:wght@400..900&display=swap"
+        rel="stylesheet">
+    <title>Копатыч VS Plants</title>
+</head>
+
+<body>
+    <div class="game-container">
+        <div class="header-container">
+            <h1 class="heading">КОПАТЫЧ <span class="heading-eng">VS PLANTS</span></h1>
+            <button class="action-button" id="restart-button">Перезапуск</button>
+        </div>
+        <div class="character-container">
+            <div class="character-wrapper left">
+                <div class="name-and-bars">
+                    <div class="player-name">Копатыч</div>
+                    <div class="xp-bar-wrapper">
+                        XP
+                        <div class="xp-bar">
+                            <div class="xp-completed-part" id="player-xp-bar"></div>
+                        </div>
+                    </div>
+                    <div class="hp-bar-wrapper">
+                        HP
+                        <div class="hp-bar">
+                            <div class="hp-completed-part" id="player-hp-bar"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="avatar-and-stats">
+                    <div class="avatar player">
+                        <img src="./images/kopatych-rest.webp" alt="Копатыч отдыхает">
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            Уровень: <span id="player-level">1</span>
+                        </div>
+                        <div class="stat">
+                            Сила: <span id="player-strength">10</span>
+                        </div>
+                        <div class="stat">
+                            Броня: <span id="player-armor">5</span>
+                        </div>
+                        <div class="stat">
+                            Здоровье(MAX): <span id="player-health-total">30</span>
+                        </div>
+                        <div class="stat">
+                            Очки опыта: <span id="player-xp-total">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="inventory">
+                    <div class="inventory-description">Сундук с полезностями</div>
+                    <div class="inventory-items">
+                        <div class="inventory-item" id="health-potion">
+                            Чай с мёдом (<span id="health-potion-amount">1</span>)
+                        </div>
+                        <div class="inventory-item" id="strength-potion">
+                            Пирожок с вареньем (<span id="strength-potion-amount">1</span>)
+                        </div>
+                        <div class="inventory-item" id="defence-potion">
+                            Респиратор (<span id="defence-potion-amount">1</span>)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="character-wrapper right">
+                <div class="name-and-bars">
+                    <div class="enemy-name">Совунья</div>
+                    <div class="hp-bar-wrapper right">
+                        <div class="hp-bar">
+                            <div class="hp-completed-part" id="enemy-hp-bar"></div>
+                        </div>
+                        HP
+                    </div>
+                </div>
+                <div class="avatar-and-stats right">
+                    <div class="stats">
+                        <div class="stat">
+                            HP: <span id="enemy-hp-total">0</span>
+                        </div>
+                        <div class="stat">
+                            Броня: <span id="enemy-armor">0</span>
+                        </div>
+                        <div class="stat">
+                            Сила: <span id="enemy-strength">0</span>
+                        </div>
+                        <div class="stat">
+                            Награда: <span id="reward">0</span> xp
+                        </div>
+                    </div>
+                    <div class="rest-description">
+                        Рецепт хорошего отдыха №1: лечь на травку, раскинуть крылья и лежать, лежать, лежать.
+                    </div>
+                    <div class="avatar enemy">
+                        <img src="./images/Sovunya.webp" alt="Совунья">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="action-buttons-container">
+            <button id="attack" class="action-button">Атака</button>
+            <button id="defense" class="action-button">Защита</button>
+            <button id="useItem" class="action-button">Использовать предмет</button>
+        </div>
+        <div class="location-wrapper">
+            <div class="current-location-wrapper">
+                Текущая локация: <span class="current-location">дом Совуньи</span>
+            </div>
+            <div class="locations">
+                <button id="Sovunya-house" class="location-button">дом Совуньи</button>
+                <button id="Kopatych-house" class="location-button">дом Копатыча</button>
+                <button id="Nyusha-house" class="location-button">дом Нюши</button>
+                <button id="Losyash-house" class="location-button">дом Лосяша</button>
+            </div>
+        </div>
+        <div class="event-log-container">
+            <div class="event-log-wrapper">
+                <div class="events">
+                    Копатыч пьёт чай с Совуньей. Отдыхай и ни в чём себе не отказывай!<br>Безопасная зона.
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <script src="./script.js"></script>
+</body>
+
+</html>
