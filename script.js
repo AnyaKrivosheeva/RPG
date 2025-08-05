@@ -1,7 +1,7 @@
 const playerStates = {   // статы игрока
     level: 1,
     strength: 10,
-    armor: 5,
+    armor: 3,
     health: 30,
     maxHealth: 30,
     currentExperience: 0,
@@ -29,7 +29,7 @@ const enemies = [     // массив с антагонистами (ну и н�
         health: 30,
         maxHealth: 30,
         armor: 2,
-        strength: 3,
+        strength: 5,
         xpReward: 5,
         isAlive: true,
         defeated: false,
@@ -42,7 +42,7 @@ const enemies = [     // массив с антагонистами (ну и н�
         health: 50,
         maxHealth: 50,
         armor: 3,
-        strength: 5,
+        strength: 7,
         xpReward: 10,
         isAlive: true,
         defeated: false,
@@ -55,7 +55,7 @@ const enemies = [     // массив с антагонистами (ну и н�
         health: 100,
         maxHealth: 100,
         armor: 5,
-        strength: 7,
+        strength: 10,
         xpReward: 20,
         isAlive: true,
         defeated: false,
@@ -98,6 +98,8 @@ const locations = {                   // локации
         description: "Лосяш тщательно выращивал свой Инопланетный сорняк до тех пор, пока он не начал светиться по ночам. Теперь он хочет избавиться от него как можно быстрее. Ты только посмотри на его шипы! Будь осторожнее!<br>Твой ход!",
     },
 };
+
+const startDescription = "Копатыч пьёт чай с Совуньей. Отдыхай и ни в чем себе не отказывай!<br>Безопасная зона.";
 
 // прописываем доступ к DOM
 const bodyElement = document.body;   // для смены фона
@@ -250,4 +252,48 @@ locationButtons.forEach(button => {
 // загрузка стартового состояния игры
 document.addEventListener("DOMContentLoaded", () => {
     changeLocation("Sovunya-house");
+    eventsLog.innerHTML = startDescription;
 });
+
+// функция перезапуска игры
+function restartGame() {
+    let restart = confirm("Ты уверен, что хочешь перезапустить игру? Весь прогресс будет потерян!");
+
+    if (restart) {
+        playerStates.level = 1;        // сброс статов игрока
+        playerStates.strength = 10;
+        playerStates.armor = 5;
+        playerStates.health = 30;
+        playerStates.maxHealth = 30;
+        playerStates.currentExperience = 0;
+        playerStates.maxExperience = 10;
+        playerStates.isDefending = false;
+        playerStates.inCombat = false;
+        playerStates.avatar = "images/kopatych-rest.webp";
+
+        inventoryStates.heal = 1;     //сброс инвентаря
+        inventoryStates.power = 1;
+        inventoryStates.defence = 1;
+
+        enemies.forEach(enemy => {          // сброс статов врагов
+            if (enemy.maxHealth) {
+                enemy.health = enemy.maxHealth;
+                enemy.isAlive = true;
+                enemy.defeated = false;
+            }
+        });
+
+        changeLocation("Sovunya-house");     //смена локации на стартовую
+        eventsLog.innerHTML = startDescription;
+    };
+
+    if (!restart) return;
+};
+
+// обработчик для кнопки рестарт
+restart.addEventListener("click", () => {
+    restartGame();
+});
+
+
+
