@@ -8,6 +8,7 @@ const playerStates = {   // статы игрока
     maxExperience: 10,
     isDefending: false,
     inCombat: false,
+    isAlive: true,
     avatar: "images/kopatych-rest.webp",
     altRest: "Копатыч на отдыхе",
     avatarArmed: "images/kopatych-armed.jpg",
@@ -24,6 +25,7 @@ const enemies = [     // массив с антагонистами (ну и н�
     {
         location: "Kopatych-house",
         name: "Некультурный сорняк",
+        nameGenitive: "Некультурному сорняку",
         avatar: "images/nekulturniy.jpg",
         alt: "Некультурный сорняк в огороде Копатыча",
         health: 30,
@@ -37,6 +39,7 @@ const enemies = [     // массив с антагонистами (ну и н�
     {
         location: "Nyusha-house",
         name: "Хищный цветок",
+        nameGenitive: "Хищному цветку",
         avatar: "images/hishniy.jpg",
         alt: "Хищный цветок в доме Нюши",
         health: 50,
@@ -50,6 +53,7 @@ const enemies = [     // массив с антагонистами (ну и н�
     {
         location: "Losyash-house",
         name: "Инопланетный сорняк",
+        nameGenitive: "Инопланетному сорняку",
         avatar: "images/inoplanetniy.jpg",
         alt: "Инопланетный сорняк в доме Лосяша",
         health: 100,
@@ -74,28 +78,28 @@ const locations = {                   // локации
         background: "images/Sovunya-house.webp",
         alt: "Домик Совуньи",
         isSafeZone: true,
-        description: "Копатыч вернулся пить чай с Совуньей и отдыхать.<br>Твоё здоровье восстановлено!",
+        description: "<br>Копатыч вернулся пить чай с Совуньей и отдыхать.<br>Твоё здоровье восстановлено!",
     },
     "Kopatych-house": {
         name: "дом Копатыча",
         background: "images/kopatych-house.webp",
         alt: "Огород Копатыча",
         isSafeZone: false,
-        description: "Копатыч отправился к себе домой, но обнаружил на огороде заросли Некультурного сорняка! Он очень быстро размножается, так не пойдёт! Приступаем к прополке!<br>Твой ход!",
+        description: "<br>Копатыч отправился к себе домой, но обнаружил на огороде заросли Некультурного сорняка! Он очень быстро размножается, так не пойдёт! Приступаем к прополке!<br>Твой ход!",
     },
     "Nyusha-house": {
         name: "дом Нюши",
         background: "images/nyusha-house.webp",
         alt: "Домик Нюши",
         isSafeZone: false,
-        description: "Нюша в отчаянии просит тебя помочь ей избавиться от Хищного цветка, которого она вырастила случайно по незнанию. У него и зубы есть, укуси меня пчела!<br>Твой ход!",
+        description: "<br>Нюша в отчаянии просит тебя помочь ей избавиться от Хищного цветка, которого она вырастила случайно по незнанию. У него и зубы есть, укуси меня пчела!<br>Твой ход!",
     },
     "Losyash-house": {
         name: "дом Лосяша",
         background: "images/losyash-house.webp",
         alt: "Домик Лосяша",
         isSafeZone: false,
-        description: "Лосяш тщательно выращивал свой Инопланетный сорняк до тех пор, пока он не начал светиться по ночам. Теперь он хочет избавиться от него как можно быстрее. Ты только посмотри на его шипы! Будь осторожнее!<br>Твой ход!",
+        description: "<br>Лосяш тщательно выращивал свой Инопланетный сорняк до тех пор, пока он не начал светиться по ночам. Теперь он хочет избавиться от него как можно быстрее. Ты только посмотри на его шипы! Будь осторожнее!<br>Твой ход!",
     },
 };
 
@@ -157,6 +161,10 @@ const locationButtons = document.querySelectorAll(".location-button"); // кно
 // журнал событий
 const eventsLog = document.querySelector(".events");
 
+// другие глобальные переменные
+let currentLocationKey = "Sovunya-house";
+let currentEnemy = null;
+
 
 // функция обновления UI персонажа
 function updatePlayerUI() {
@@ -190,7 +198,7 @@ function updateInventoryUI() {
 
 // функция обновления UI врага
 function updateEnemyUI(location) {
-    const currentEnemy = enemies.find(enemy => enemy.location === location);  //получаем текущего врага
+    currentEnemy = enemies.find(enemy => enemy.location === location);  //получаем текущего врага
 
     if (!currentEnemy || location === "Sovunya-house") {    // если текущий враг- совунья,то показываем блок отдыха
         enemyName.textContent = currentEnemy?.name ?? "Совунья";
@@ -221,13 +229,20 @@ function updateEnemyUI(location) {
     enemyReward.textContent = currentEnemy.xpReward;
 };
 
+// функция для записи сообщений в журнал
+function logEvent(message) {
+    eventsLog.innerHTML += `${message}<br>`;
+    eventsLog.scrollTop = eventsLog.scrollHeight;  // для прокрутки вниз
+};
+
 // функция смены локации
 function changeLocation(locationKey) {
     const location = locations[locationKey];   // получаем объект локации
+    currentLocationKey = locationKey;  // записываем в глобальную переменную текущую локацию
 
     currentLocation.textContent = location.name;
     bodyElement.style.backgroundImage = `url(${location.background})`;
-    eventsLog.innerHTML = location.description;
+    logEvent(location.description);
 
     playerStates.inCombat = !location.isSafeZone; // устанавливаем флагдля определения безопасная зона или нет
 
@@ -252,42 +267,46 @@ locationButtons.forEach(button => {
 // загрузка стартового состояния игры
 document.addEventListener("DOMContentLoaded", () => {
     changeLocation("Sovunya-house");
-    eventsLog.innerHTML = startDescription;
+    logEvent(startDescription);
 });
 
 // функция перезапуска игры
 function restartGame() {
     let restart = confirm("Ты уверен, что хочешь перезапустить игру? Весь прогресс будет потерян!");
 
-    if (restart) {
-        playerStates.level = 1;        // сброс статов игрока
-        playerStates.strength = 10;
-        playerStates.armor = 5;
-        playerStates.health = 30;
-        playerStates.maxHealth = 30;
-        playerStates.currentExperience = 0;
-        playerStates.maxExperience = 10;
-        playerStates.isDefending = false;
-        playerStates.inCombat = false;
-        playerStates.avatar = "images/kopatych-rest.webp";
-
-        inventoryStates.heal = 1;     //сброс инвентаря
-        inventoryStates.power = 1;
-        inventoryStates.defence = 1;
-
-        enemies.forEach(enemy => {          // сброс статов врагов
-            if (enemy.maxHealth) {
-                enemy.health = enemy.maxHealth;
-                enemy.isAlive = true;
-                enemy.defeated = false;
-            }
-        });
-
-        changeLocation("Sovunya-house");     //смена локации на стартовую
-        eventsLog.innerHTML = startDescription;
-    };
-
     if (!restart) return;
+
+    playerStates.level = 1;        // сброс статов игрока
+    playerStates.strength = 10;
+    playerStates.armor = 3;
+    playerStates.health = 30;
+    playerStates.maxHealth = 30;
+    playerStates.currentExperience = 0;
+    playerStates.maxExperience = 10;
+    playerStates.isDefending = false;
+    playerStates.inCombat = false;
+    playerStates.avatar = "images/kopatych-rest.webp";
+
+    inventoryStates.heal = 1;     //сброс инвентаря
+    inventoryStates.power = 1;
+    inventoryStates.defence = 1;
+
+    enemies.forEach(enemy => {          // сброс статов врагов
+        if (enemy.maxHealth) {
+            enemy.health = enemy.maxHealth;
+            enemy.isAlive = true;
+            enemy.defeated = false;
+        }
+    });
+
+    locationButtons.forEach(button => {
+        button.disabled = false;
+    });
+
+    changeLocation("Sovunya-house");     //смена локации на стартовую
+    eventsLog.innerHTML = "";
+    logEvent(startDescription);
+
 };
 
 // обработчик для кнопки рестарт
@@ -295,5 +314,62 @@ restart.addEventListener("click", () => {
     restartGame();
 });
 
+// функция атаки врага
+function attackEnemy() {
+    currentEnemy = enemies.find(enemy => enemy.location === currentLocationKey);  // находим текущего врага по локации
+
+    if (!currentEnemy) return;
+
+    const damageToEnemy = Math.max(playerStates.strength - currentEnemy.armor, 1);  // высчитываем урон
+    currentEnemy.health = currentEnemy.health - damageToEnemy;   // высчитываем текущее здоровье врага
+
+    updateEnemyUI(currentLocationKey);      // обновляем интерфейс врага
+
+    logEvent(`Ты наносишь ${damageToEnemy} урона ${currentEnemy.nameGenitive}!`);
+
+    if (currentEnemy.health <= 0) {
+        EnemyIsDefeated();
+    } else {
+        attackPlayer();
+    }
+};
 
 
+// функция ответной атаки врага
+function attackPlayer() {
+    const damageToPlayer = Math.max(currentEnemy.strength - playerStates.armor, 1);  //высчитываем урон игроку
+    playerStates.health = playerStates.health - damageToPlayer;     // перезаписываем статы героя
+    updatePlayerUI();
+
+    logEvent(`${currentEnemy.name} нанёс тебе ${damageToPlayer} очков урона!`);
+
+    if (playerStates.health <= 0) {
+        gameOver();
+    } else {
+        logEvent(`Твой ход!`);
+    }
+};
+
+// функция конец игры
+function gameOver() {
+    playerStates.isAlive = false;
+    logEvent(`Ты надышался химикатов пока атаковал врага.<br>Попробуй начать игру заново!`);
+
+    actionButtonsContainer.style.display = "none";  // скрываем кнопки и блокируем кнопки локаций 
+    locationButtons.forEach(button => {
+        button.disabled = true;
+    });
+};
+
+// функция победы над врагом
+function EnemyIsDefeated() {
+    currentEnemy.isAlive = false;
+    currentEnemy.defeated = true;
+
+    logEvent(`Ты победил ${currentEnemy.name}!<br>Получено ${currentEnemy.xpReward} очков опыта!`); // !!!хочу еще добавить чтобы игрок получал рандомный предмет инвентаря
+    playerStates.currentExperience += currentEnemy.xpReward;
+
+    updatePlayerUI();
+
+    actionButtonsContainer.style.display = "none"; // скрываем кнопки действий
+}
