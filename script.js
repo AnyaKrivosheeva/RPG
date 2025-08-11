@@ -6,6 +6,8 @@ const playerStates = {   // статы игрока
     maxHealth: 30,
     currentExperience: 0,
     maxExperience: 10,
+    strengthBoostTurns: 0,
+    armorBoostTurns: 0,
     isDefending: false,
     inCombat: false,
     isAlive: true,
@@ -19,7 +21,9 @@ const inventoryStates = {    //инвентарь
     heal: 1,
     power: 1,
     defence: 1,
-}
+};
+
+const inventoryItemsTypes = ["heal", "power", "defence",];
 
 const enemies = [     // массив с антагонистами (ну и нпс тоже тут)
     {
@@ -78,28 +82,28 @@ const locations = {                   // локации
         background: "images/Sovunya-house.webp",
         alt: "Домик Совуньи",
         isSafeZone: true,
-        description: "<br>Копатыч вернулся пить чай с Совуньей и отдыхать.<br>Твоё здоровье восстановлено!",
+        description: "Копатыч вернулся пить чай с Совуньей и отдыхать.<br>Твоё здоровье восстановлено!",
     },
     "Kopatych-house": {
         name: "дом Копатыча",
         background: "images/kopatych-house.webp",
         alt: "Огород Копатыча",
         isSafeZone: false,
-        description: "<br>Копатыч отправился к себе домой, но обнаружил на огороде заросли Некультурного сорняка! Он очень быстро размножается, так не пойдёт! Приступаем к прополке!<br>Твой ход!",
+        description: "Копатыч отправился к себе домой, но обнаружил на огороде заросли Некультурного сорняка! Он очень быстро размножается, так не пойдёт! Приступаем к прополке!<br>Твой ход!",
     },
     "Nyusha-house": {
         name: "дом Нюши",
         background: "images/nyusha-house.webp",
         alt: "Домик Нюши",
         isSafeZone: false,
-        description: "<br>Нюша в отчаянии просит тебя помочь ей избавиться от Хищного цветка, которого она вырастила случайно по незнанию. У него и зубы есть, укуси меня пчела!<br>Твой ход!",
+        description: "Нюша в отчаянии просит тебя помочь ей избавиться от Хищного цветка, которого она вырастила случайно по незнанию. У него и зубы есть, укуси меня пчела!<br>Твой ход!",
     },
     "Losyash-house": {
         name: "дом Лосяша",
         background: "images/losyash-house.webp",
         alt: "Домик Лосяша",
         isSafeZone: false,
-        description: "<br>Лосяш тщательно выращивал свой Инопланетный сорняк до тех пор, пока он не начал светиться по ночам. Теперь он хочет избавиться от него как можно быстрее. Ты только посмотри на его шипы! Будь осторожнее!<br>Твой ход!",
+        description: "Лосяш тщательно выращивал свой Инопланетный сорняк до тех пор, пока он не начал светиться по ночам. Теперь он хочет избавиться от него как можно быстрее. Ты только посмотри на его шипы! Будь осторожнее!<br>Твой ход!",
     },
 };
 
@@ -169,8 +173,8 @@ let currentEnemy = null;
 // функция обновления UI персонажа
 function updatePlayerUI() {
     playerLevel.textContent = playerStates.level;
-    playerStrength.textContent = playerStates.strength;
-    playerArmor.textContent = playerStates.armor;
+    playerStrength.textContent = getCurrentStrength();
+    playerArmor.textContent = getCurrentArmor();
     playerMaxHealth.textContent = playerStates.maxHealth;
     playerTotalExperience.textContent = playerStates.currentExperience;
 
@@ -181,6 +185,11 @@ function updatePlayerUI() {
         playerAvatar.src = playerStates.avatar;
         playerAvatar.alt = playerStates.altRest;
     }
+
+    if (playerStates.isAlive === false) {
+        playerHpBar.style.width = "0%";
+        playerHpBar.style.backgroundColor = "rgba(205, 15, 15, 0);";
+    };
 
     const xpPercent = (playerStates.currentExperience / playerStates.maxExperience) * 100;
     const hpPercent = (playerStates.health / playerStates.maxHealth) * 100;
@@ -211,6 +220,12 @@ function updateEnemyUI(location) {
         restDescription.style.display = "block";
         return;
     }
+
+    if (currentEnemy.isAlive === false & currentEnemy.defeated === true) {
+        enemyHpBar.style.width = "0%";
+        enemyHpBar.style.backgroundColor = "rgba(205, 15, 15, 0);";
+    };
+
     enemyStatsBlock.style.display = "block";
     restDescription.style.display = "none";
 
@@ -231,7 +246,7 @@ function updateEnemyUI(location) {
 
 // функция для записи сообщений в журнал
 function logEvent(message) {
-    eventsLog.innerHTML += `${message}<br>`;
+    eventsLog.innerHTML += `<br>${message}<br>`;
     eventsLog.scrollTop = eventsLog.scrollHeight;  // для прокрутки вниз
 };
 
@@ -248,11 +263,20 @@ function changeLocation(locationKey) {
 
     if (location.isSafeZone) {
         actionButtonsContainer.style.display = "none";
+        playerStates.health = playerStates.maxHealth;
     } else {
         actionButtonsContainer.style.display = "flex";
     };
 
     updatePlayerUI();
+
+    const enemy = enemies.find(enemy => enemy.location === locationKey); // находим врага в локации
+    if (enemy && enemy.maxHealth) {      // и сбрасываем его статы
+        enemy.health = enemy.maxHealth;
+        enemy.isAlive = true;
+        enemy.defeated = false;
+    };
+
     updateEnemyUI(locationKey);
     updateInventoryUI();
 };
@@ -267,7 +291,7 @@ locationButtons.forEach(button => {
 // загрузка стартового состояния игры
 document.addEventListener("DOMContentLoaded", () => {
     changeLocation("Sovunya-house");
-    logEvent(startDescription);
+    eventsLog.innerHTML = `${startDescription}<br>`;
 });
 
 // функция перезапуска игры
@@ -283,6 +307,8 @@ function restartGame() {
     playerStates.maxHealth = 30;
     playerStates.currentExperience = 0;
     playerStates.maxExperience = 10;
+    playerStates.strengthBoostTurns = 0;
+    playerStates.armorBoostTurns = 0;
     playerStates.isDefending = false;
     playerStates.inCombat = false;
     playerStates.avatar = "images/kopatych-rest.webp";
@@ -301,12 +327,13 @@ function restartGame() {
 
     locationButtons.forEach(button => {
         button.disabled = false;
+        button.style.backgroundColor = "#0493c9";
+        button.style.cursor = "pointer";
     });
 
     changeLocation("Sovunya-house");     //смена локации на стартовую
     eventsLog.innerHTML = "";
-    logEvent(startDescription);
-
+    eventsLog.innerHTML = `${startDescription}<br>`;
 };
 
 // обработчик для кнопки рестарт
@@ -320,10 +347,11 @@ function attackEnemy() {
 
     if (!currentEnemy) return;
 
-    const damageToEnemy = Math.max(playerStates.strength - currentEnemy.armor, 1);  // высчитываем урон
+    const damageToEnemy = Math.max(getCurrentStrength() - currentEnemy.armor, 1);  // высчитываем урон
     currentEnemy.health = currentEnemy.health - damageToEnemy;   // высчитываем текущее здоровье врага
 
     updateEnemyUI(currentLocationKey);      // обновляем интерфейс врага
+    updateEffectAfterTurn();
 
     logEvent(`Ты наносишь ${damageToEnemy} урона ${currentEnemy.nameGenitive}!`);
 
@@ -334,12 +362,21 @@ function attackEnemy() {
     }
 };
 
-
 // функция ответной атаки врага
 function attackPlayer() {
-    const damageToPlayer = Math.max(currentEnemy.strength - playerStates.armor, 1);  //высчитываем урон игроку
+    let damageToPlayer;
+
+    if (playerStates.isDefending === true) {
+        damageToPlayer = Math.max(currentEnemy.strength - (getCurrentArmor() + 2), 1);
+
+        playerStates.isDefending = false;
+    } else {
+        damageToPlayer = Math.max(currentEnemy.strength - getCurrentArmor(), 1);  //высчитываем урон игроку
+    };
+
     playerStates.health = playerStates.health - damageToPlayer;     // перезаписываем статы героя
     updatePlayerUI();
+    updateEffectAfterTurn();
 
     logEvent(`${currentEnemy.name} нанёс тебе ${damageToPlayer} очков урона!`);
 
@@ -347,17 +384,20 @@ function attackPlayer() {
         gameOver();
     } else {
         logEvent(`Твой ход!`);
-    }
+    };
 };
 
 // функция конец игры
 function gameOver() {
     playerStates.isAlive = false;
+    updatePlayerUI();
     logEvent(`Ты надышался химикатов пока атаковал врага.<br>Попробуй начать игру заново!`);
 
     actionButtonsContainer.style.display = "none";  // скрываем кнопки и блокируем кнопки локаций 
     locationButtons.forEach(button => {
         button.disabled = true;
+        button.style.backgroundColor = "#858585";
+        button.style.cursor = "no-drop";
     });
 };
 
@@ -366,10 +406,134 @@ function EnemyIsDefeated() {
     currentEnemy.isAlive = false;
     currentEnemy.defeated = true;
 
-    logEvent(`Ты победил ${currentEnemy.name}!<br>Получено ${currentEnemy.xpReward} очков опыта!`); // !!!хочу еще добавить чтобы игрок получал рандомный предмет инвентаря
     playerStates.currentExperience += currentEnemy.xpReward;
+    const randomItem = inventoryItemsTypes[Math.floor(Math.random() * inventoryItemsTypes.length)];
+    inventoryStates[randomItem]++;
+    logEvent(`Ты победил ${currentEnemy.name}!<br>Получено ${currentEnemy.xpReward} очков опыта!`);
+    logEvent(`Ты нашёл: ${getNameToPotions(randomItem)}`);
 
     updatePlayerUI();
+    updateEnemyUI(currentLocationKey);
+    updateInventoryUI();
 
-    actionButtonsContainer.style.display = "none"; // скрываем кнопки действий
+    actionButtonsContainer.style.display = "none"; // скрываем кнопки действий после победы
+};
+
+// функция для наименования полученного инвентаря
+function getNameToPotions(key) {
+    switch (key) {
+        case "heal": return "Чай с мёдом";
+        case "power": return "Пирожок с вареньем";
+        case "defence": return "Респиратор";
+        default: return "Неизвестный предмет";
+    };
+};
+
+// обработчик кнопки "атака"
+attackButton.addEventListener("click", () => {
+    attackEnemy();
+});
+
+// функция защиты
+function defence() {
+    playerStates.isDefending = true;
+    logEvent("Твоя защита увеличена на один ход!");
+
+    attackPlayer();
+};
+
+// обработчик для кнопки защиты
+defenseButton.addEventListener("click", () => {
+    defence();
+});
+
+// обработчик кнопки использования предмета
+useItemButton.addEventListener("click", () => {
+    enableInventoryButtons();   // включаем кнопки инвентаря
+});
+
+// навешиваем обработчики на кнопки инвентаря
+inventoryItemButtons.forEach(button => {        // по дефолту кнопки заблокированы
+    button.disabled = true;
+    button.style.backgroundColor = "#186b0442";
+    button.style.cursor = "default";
+
+    button.addEventListener("click", () => {
+        if (!button.disabled) {            // при клике (если кнопки не заблокированы) вызываем функцию использования предмета
+            const itemKey = button.id;
+            useItem(itemKey);
+
+            attackPlayer();
+        }
+    });
+});
+
+// функция включения кнопок инвентаря
+function enableInventoryButtons() {
+    inventoryItemButtons.forEach(button => {
+        button.disabled = false;
+        button.style.backgroundColor = "#1fb944d1";
+        button.style.cursor = "pointer";
+    });
 }
+
+//функция отключения кнопок инвентаря
+function disableInventoryButtons() {
+    inventoryItemButtons.forEach(button => {
+        button.disabled = true;
+        button.style.backgroundColor = "#186b0442";
+        button.style.cursor = "default";
+    });
+};
+
+//функция использования предмета
+function useItem(itemKey) {
+    if (!itemKey) return;
+
+    switch (itemKey) {
+        case "health-potion":
+            playerStates.health = Math.min(playerStates.health + 10, playerStates.maxHealth);
+            logEvent("Ты подкрепился чаем с мёдом! +10HP!");
+            break;
+        case "strength-potion":
+            playerStates.strengthBoostTurns = 2;  // ставим счетчик на 2 хода
+            logEvent("Ты подкрепился пирожком! +50% к силе на два хода!");
+            break;
+        case "defence-potion":
+            playerStates.armorBoostTurns = 2;  // ставим счетчик на 2 хода
+            logEvent("Ты воспользовался респиратором для защиты от химикатов! +50% к броне на 2 хода!");
+            break;
+        default:
+            logEvent("Этот предмет нельзя использовать.");
+            break;
+    }
+    disableInventoryButtons();  // и потом отключаем кнопки
+    updatePlayerUI();
+    updateEnemyUI(currentLocationKey);
+};
+
+//функции получения текущих параметров(учитываем усиления)
+function getCurrentStrength() {
+    if (playerStates.strengthBoostTurns > 0) {
+        return Math.round(playerStates.strength * 1.5);
+    }
+    return playerStates.strength;
+};
+
+function getCurrentArmor() {
+    if (playerStates.armorBoostTurns > 0) {
+        return Math.round(playerStates.armor * 1.5);
+    }
+    return playerStates.armor;
+};
+
+// функция апдейта счетчиков эффектов
+function updateEffectAfterTurn() {
+    if (playerStates.strengthBoostTurns > 0) {
+        playerStates.strengthBoostTurns--;
+    }
+    if (playerStates.armorBoostTurns > 0) {
+        playerStates.armorBoostTurns--;
+    }
+};
+
