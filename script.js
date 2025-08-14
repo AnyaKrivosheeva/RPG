@@ -50,7 +50,7 @@ const enemies = [     // массив с антагонистами (ну и н�
         maxHealth: 50,
         armor: 3,
         strength: 7,
-        xpReward: 10,
+        xpReward: 7,
         isAlive: true,
         defeated: false,
     },
@@ -64,7 +64,7 @@ const enemies = [     // массив с антагонистами (ну и н�
         maxHealth: 100,
         armor: 5,
         strength: 10,
-        xpReward: 20,
+        xpReward: 10,
         isAlive: true,
         defeated: false,
     },
@@ -168,6 +168,7 @@ const eventsLog = document.querySelector(".events");
 // другие глобальные переменные
 let currentLocationKey = "Sovunya-house";
 let currentEnemy = null;
+let gameLog = [];
 
 
 // функция обновления UI персонажа
@@ -221,7 +222,7 @@ function updateEnemyUI(location) {
         return;
     }
 
-    if (currentEnemy.isAlive === false & currentEnemy.defeated === true) {
+    if (currentEnemy.isAlive === false && currentEnemy.defeated === true) {
         enemyHpBar.style.width = "0%";
         enemyHpBar.style.backgroundColor = "rgba(205, 15, 15, 0);";
     };
@@ -244,20 +245,36 @@ function updateEnemyUI(location) {
     enemyReward.textContent = currentEnemy.xpReward;
 };
 
+// функция апдейта журнала событий(при подгрузке из хранилища)
+function updateLogUI() {
+    eventsLog.innerHTML = "";
+    gameLog.forEach((message) => {
+        eventsLog.innerHTML += `<br>${message}<br>`;
+        eventsLog.scrollTop = eventsLog.scrollHeight;
+    });
+};
+
 // функция для записи сообщений в журнал
 function logEvent(message) {
     eventsLog.innerHTML += `<br>${message}<br>`;
     eventsLog.scrollTop = eventsLog.scrollHeight;  // для прокрутки вниз
+
+    gameLog.push(message);
+    if (gameLog.length > 10) {
+        gameLog.shift();
+    };
 };
 
 // функция смены локации
-function changeLocation(locationKey) {
+function changeLocation(locationKey, skipEnemyReset = false) {
     const location = locations[locationKey];   // получаем объект локации
     currentLocationKey = locationKey;  // записываем в глобальную переменную текущую локацию
 
     currentLocation.textContent = location.name;
     bodyElement.style.backgroundImage = `url(${location.background})`;
-    logEvent(location.description);
+    if (!skipEnemyReset) {
+        logEvent(location.description);
+    };
 
     playerStates.inCombat = !location.isSafeZone; // устанавливаем флагдля определения безопасная зона или нет
 
@@ -271,7 +288,7 @@ function changeLocation(locationKey) {
     updatePlayerUI();
 
     const enemy = enemies.find(enemy => enemy.location === locationKey); // находим врага в локации
-    if (enemy && enemy.maxHealth) {      // и сбрасываем его статы
+    if (enemy && enemy.maxHealth && !skipEnemyReset) {      // и сбрасываем его статы
         enemy.health = enemy.maxHealth;
         enemy.isAlive = true;
         enemy.defeated = false;
@@ -279,6 +296,7 @@ function changeLocation(locationKey) {
 
     updateEnemyUI(locationKey);
     updateInventoryUI();
+    saveProgress();
 };
 
 // обработчик клика на кнопки локаций
@@ -288,10 +306,14 @@ locationButtons.forEach(button => {
     })
 });
 
-// загрузка стартового состояния игры
+// загрузка стартового состояния игры или подгрузка сохранения при перезагрузке страницы
 document.addEventListener("DOMContentLoaded", () => {
-    changeLocation("Sovunya-house");
-    eventsLog.innerHTML = `${startDescription}<br>`;
+    if (localStorage.getItem("gameProgress")) {
+        loadProgress();
+    } else {
+        changeLocation("Sovunya-house");
+        eventsLog.innerHTML = `${startDescription}<br>`;
+    };
 });
 
 // функция перезапуска игры
@@ -311,6 +333,7 @@ function restartGame() {
     playerStates.armorBoostTurns = 0;
     playerStates.isDefending = false;
     playerStates.inCombat = false;
+    playerStates.isAlive = true;
     playerStates.avatar = "images/kopatych-rest.webp";
 
     inventoryStates.heal = 1;     //сброс инвентаря
@@ -354,6 +377,7 @@ function attackEnemy() {
     updateEffectAfterTurn();
 
     logEvent(`Ты наносишь ${damageToEnemy} урона ${currentEnemy.nameGenitive}!`);
+    saveProgress();
 
     if (currentEnemy.health <= 0) {
         EnemyIsDefeated();
@@ -384,6 +408,7 @@ function attackPlayer() {
         gameOver();
     } else {
         logEvent(`Твой ход!`);
+        saveProgress();
     };
 };
 
@@ -411,10 +436,12 @@ function EnemyIsDefeated() {
     inventoryStates[randomItem]++;
     logEvent(`Ты победил ${currentEnemy.name}!<br>Получено ${currentEnemy.xpReward} очков опыта!`);
     logEvent(`Ты нашёл: ${getNameToPotions(randomItem)}`);
+    checkLevelUp();
 
     updatePlayerUI();
     updateEnemyUI(currentLocationKey);
     updateInventoryUI();
+    saveProgress();
 
     actionButtonsContainer.style.display = "none"; // скрываем кнопки действий после победы
 };
@@ -452,22 +479,6 @@ useItemButton.addEventListener("click", () => {
     enableInventoryButtons();   // включаем кнопки инвентаря
 });
 
-// навешиваем обработчики на кнопки инвентаря
-inventoryItemButtons.forEach(button => {        // по дефолту кнопки заблокированы
-    button.disabled = true;
-    button.style.backgroundColor = "#186b0442";
-    button.style.cursor = "default";
-
-    button.addEventListener("click", () => {
-        if (!button.disabled) {            // при клике (если кнопки не заблокированы) вызываем функцию использования предмета
-            const itemKey = button.id;
-            useItem(itemKey);
-
-            attackPlayer();
-        }
-    });
-});
-
 // функция включения кнопок инвентаря
 function enableInventoryButtons() {
     inventoryItemButtons.forEach(button => {
@@ -486,22 +497,53 @@ function disableInventoryButtons() {
     });
 };
 
+// навешиваем обработчики на кнопки инвентаря
+inventoryItemButtons.forEach(button => {        // по дефолту кнопки заблокированы
+    button.disabled = true;
+    button.style.backgroundColor = "#186b0442";
+    button.style.cursor = "default";
+
+    button.addEventListener("click", () => {
+        if (!button.disabled) {            // при клике (если кнопки не заблокированы) вызываем функцию использования предмета
+            const itemKey = button.id;
+            useItem(itemKey);
+
+            attackPlayer();
+        }
+    });
+});
+
 //функция использования предмета
 function useItem(itemKey) {
     if (!itemKey) return;
 
     switch (itemKey) {
         case "health-potion":
+            if (inventoryStates.heal <= 0) {
+                logEvent("У тебя нет чая с мёдом!");
+                return;
+            };
+            inventoryStates.heal--;
             playerStates.health = Math.min(playerStates.health + 10, playerStates.maxHealth);
             logEvent("Ты подкрепился чаем с мёдом! +10HP!");
             break;
         case "strength-potion":
-            playerStates.strengthBoostTurns = 2;  // ставим счетчик на 2 хода
-            logEvent("Ты подкрепился пирожком! +50% к силе на два хода!");
+            if (inventoryStates.power <= 0) {
+                logEvent("У тебя нет пирожка с вареньем!");
+                return;
+            };
+            inventoryStates.power--;
+            playerStates.strengthBoostTurns = 3;  // ставим счетчик на 3 
+            logEvent("Ты подкрепился пирожком! Временно +50% к силе!");
             break;
         case "defence-potion":
-            playerStates.armorBoostTurns = 2;  // ставим счетчик на 2 хода
-            logEvent("Ты воспользовался респиратором для защиты от химикатов! +50% к броне на 2 хода!");
+            if (inventoryStates.defence <= 0) {
+                logEvent("У тебя нет респиратора!");
+                return;
+            };
+            inventoryStates.defence--;
+            playerStates.armorBoostTurns = 3;  // ставим счетчик на 3 
+            logEvent("Ты воспользовался респиратором для защиты от химикатов! Временно +50% к броне!");
             break;
         default:
             logEvent("Этот предмет нельзя использовать.");
@@ -509,7 +551,9 @@ function useItem(itemKey) {
     }
     disableInventoryButtons();  // и потом отключаем кнопки
     updatePlayerUI();
+    updateInventoryUI();
     updateEnemyUI(currentLocationKey);
+    saveProgress();
 };
 
 //функции получения текущих параметров(учитываем усиления)
@@ -537,3 +581,114 @@ function updateEffectAfterTurn() {
     }
 };
 
+// функция проверки на повышение уровня
+function checkLevelUp() {
+    let safetyCounter = 0;
+    while (playerStates.currentExperience >= playerStates.maxExperience && safetyCounter < 20) {  //цикл на случай поднятия сразу нескольких уровней за раз
+        updatePlayerLevel();
+        safetyCounter++;
+    };
+    if (safetyCounter === 20) {
+        console.error("Прерывание цикла: возможно, баг в логике начисления опыта");
+    }
+    return;
+};
+
+// функция повышения уровня игрока
+function updatePlayerLevel() {
+    playerStates.level++;
+    playerStates.currentExperience -= playerStates.maxExperience;  //обновляем значение опыта, записывая в него остаток после повышения уровня
+    playerStates.maxExperience += 10;
+    playerStates.maxHealth += 10;
+    playerStates.health = playerStates.maxHealth;
+    playerStates.strength = Math.min(playerStates.strength + 5, 50);
+    playerStates.armor = Math.min(playerStates.armor + 1, 10);
+    logEvent(`Ты достиг ${playerStates.level} уровня! Характеристики увеличены!`);
+};
+
+// функция сохранения прогресса
+function saveProgress() {
+    const gameProgress = {     // создаем объект со всем что надо сохранять(статы героя, инвентарь, локация и враг)
+        player: {
+            level: playerStates.level,
+            strength: playerStates.strength,
+            armor: playerStates.armor,
+            health: playerStates.health,
+            maxHealth: playerStates.maxHealth,
+            currentExperience: playerStates.currentExperience,
+            maxExperience: playerStates.maxExperience,
+            strengthBoostTurns: playerStates.strengthBoostTurns,
+            armorBoostTurns: playerStates.armorBoostTurns,
+            isDefending: playerStates.isDefending,
+            inCombat: playerStates.inCombat,
+            isAlive: playerStates.isAlive,
+        },
+        inventory: { ...inventoryStates },
+        log: [...gameLog],
+        location: currentLocationKey,
+        enemies: enemies.map(e => ({
+            location: e.location,
+            health: e.health,
+            isAlive: e.isAlive,
+            defeated: e.defeated,
+        })),
+    };
+    localStorage.setItem("gameProgress", JSON.stringify(gameProgress));  //сохраняем данные в localStorage
+};
+
+// функция загрузки прогресса
+function loadProgress() {
+    const savedProgress = localStorage.getItem("gameProgress");   //получаем данные из хранилища
+    if (savedProgress) {                                          // если данные существуют, то перезаписываем значения 
+        const gameProgress = JSON.parse(savedProgress);
+
+        applyLoadedProgress(gameProgress);
+    };
+};
+
+// функция для подгрузки сохраненных данных
+function applyLoadedProgress(gameProgress) {
+    playerStates.level = gameProgress.player.level;          // данные игрока
+    playerStates.strength = gameProgress.player.strength;
+    playerStates.armor = gameProgress.player.armor;
+    playerStates.health = gameProgress.player.health;
+    playerStates.maxHealth = gameProgress.player.maxHealth;
+    playerStates.currentExperience = gameProgress.player.currentExperience;
+    playerStates.maxExperience = gameProgress.player.maxExperience;
+    playerStates.strengthBoostTurns = gameProgress.player.strengthBoostTurns;
+    playerStates.armorBoostTurns = gameProgress.player.armorBoostTurns;
+    playerStates.isDefending = gameProgress.player.isDefending;
+    playerStates.inCombat = gameProgress.player.inCombat;
+    playerStates.isAlive = gameProgress.player.isAlive;
+
+    inventoryStates.heal = gameProgress.inventory.heal;     //данные инвентаря
+    inventoryStates.power = gameProgress.inventory.power;
+    inventoryStates.defence = gameProgress.inventory.defence;
+
+    gameProgress.enemies.forEach(savedEnemy => {
+        const enemy = enemies.find(e => e.location === savedEnemy.location);
+
+        if (enemy) {
+            enemy.health = savedEnemy.health;
+            enemy.isAlive = savedEnemy.isAlive;
+            enemy.defeated = savedEnemy.defeated;
+        }
+    });
+
+    currentLocationKey = gameProgress.location;   //локация
+
+    gameLog.length = 0;
+    if (gameProgress.log && gameProgress.log.length > 0) {
+        gameLog.push(...gameProgress.log);  // наполняем актуальными событиями
+    };
+    updateLogUI();
+
+    updatePlayerUI();
+    updateInventoryUI();
+    changeLocation(currentLocationKey, true);
+};
+
+// сохраняем данные перед закрытием странички
+window.addEventListener("beforeunload", () => {
+    saveProgress();
+});
