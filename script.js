@@ -250,8 +250,8 @@ function updateLogUI() {
     eventsLog.innerHTML = "";
     gameLog.forEach((message) => {
         eventsLog.innerHTML += `<br>${message}<br>`;
-        eventsLog.scrollTop = eventsLog.scrollHeight;
     });
+    eventsLog.scrollTop = eventsLog.scrollHeight;
 };
 
 // функция для записи сообщений в журнал
@@ -260,7 +260,7 @@ function logEvent(message) {
     eventsLog.scrollTop = eventsLog.scrollHeight;  // для прокрутки вниз
 
     gameLog.push(message);
-    if (gameLog.length > 10) {
+    if (gameLog.length > 15) {
         gameLog.shift();
     };
 };
@@ -356,7 +356,8 @@ function restartGame() {
 
     changeLocation("Sovunya-house");     //смена локации на стартовую
     eventsLog.innerHTML = "";
-    eventsLog.innerHTML = `${startDescription}<br>`;
+    gameLog = [];
+    logEvent(`${startDescription}`);
 };
 
 // обработчик для кнопки рестарт
@@ -608,6 +609,8 @@ function updatePlayerLevel() {
 
 // функция сохранения прогресса
 function saveProgress() {
+    const trimmedLog = gameLog.slice(-15); // только последние 15 событий
+
     const gameProgress = {     // создаем объект со всем что надо сохранять(статы героя, инвентарь, локация и враг)
         player: {
             level: playerStates.level,
@@ -624,7 +627,7 @@ function saveProgress() {
             isAlive: playerStates.isAlive,
         },
         inventory: { ...inventoryStates },
-        log: [...gameLog],
+        log: trimmedLog,
         location: currentLocationKey,
         enemies: enemies.map(e => ({
             location: e.location,
@@ -677,9 +680,10 @@ function applyLoadedProgress(gameProgress) {
 
     currentLocationKey = gameProgress.location;   //локация
 
-    gameLog.length = 0;
-    if (gameProgress.log && gameProgress.log.length > 0) {
-        gameLog.push(...gameProgress.log);  // наполняем актуальными событиями
+    gameLog = gameProgress.log || [];
+
+    if (gameLog.length > 15) {
+        gameLog = gameLog.slice(-15);
     };
     updateLogUI();
 
