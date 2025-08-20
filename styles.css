@@ -333,3 +333,327 @@ body::before {
     scroll-behavior: smooth;
     font-size: 14px;
 }
+
+@media screen and (max-width:1000px) {
+    body::before {
+        height: 110%;
+    }
+
+    .stat {
+        font-size: 12px;
+    }
+
+    .game-container {
+        max-width: 550px;
+
+    }
+
+    .game-container .header-container {
+        gap: 20px;
+    }
+
+    .game-container .character-container {
+        gap: 30px;
+    }
+
+    .game-container .character-container .character-wrapper .rest-description {
+        padding: 5px 7px;
+        font-size: 12px;
+    }
+
+    .game-container .event-log-container .event-log-wrapper .events {
+        max-height: 150px;
+        font-size: 13px;
+    }
+}
+
+@media screen and (max-width:700px) {
+    .action-button {
+        border-radius: 5px;
+        padding: 3px 5px;
+        font-size: 11px;
+    }
+
+    .character-wrapper {
+        gap: 12px;
+    }
+
+    .hp-bar-wrapper {
+        font-size: 10px;
+    }
+
+    .hp-bar {
+        width: 100px;
+    }
+
+    .avatar-and-stats {
+        gap: 8px;
+    }
+
+    .avatar img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .stats {
+        padding: 5px;
+    }
+
+    .stat {
+        font-size: 11px;
+    }
+
+    .game-container {
+        max-width: 450px;
+    }
+
+    .game-container .header-container .heading {
+        font-size: 20px;
+    }
+
+    .game-container .header-container .heading .heading-eng {
+        font-size: 25px;
+    }
+
+    .game-container .character-container {
+        gap: 20px;
+    }
+
+    .character-wrapper.left {
+        margin-left: 15px;
+    }
+
+    .game-container .character-container .character-wrapper .name-and-bars .player-name {
+        font-size: 15px;
+    }
+
+    .game-container .character-container .character-wrapper .name-and-bars .xp-bar-wrapper {
+        font-size: 10px;
+    }
+
+    .game-container .character-container .character-wrapper .name-and-bars .xp-bar-wrapper .xp-bar {
+        width: 100px;
+    }
+
+    .game-container .character-container .character-wrapper .inventory .inventory-description {
+        font-size: 13px;
+    }
+
+    .game-container .character-container .character-wrapper .inventory .inventory-items {
+        padding: 7px;
+    }
+
+    .game-container .character-container .character-wrapper .inventory .inventory-items .inventory-item {
+        font-size: 11px;
+    }
+
+    .game-container .character-container .character-wrapper.right {
+        margin-right: 15px;
+    }
+
+    .game-container .character-container .character-wrapper .name-and-bars .enemy-name {
+        font-size: 15px;
+    }
+
+    .game-container .character-container .character-wrapper .rest-description {
+        padding: 5px 5px;
+        font-size: 11px;
+    }
+
+    .game-container .location-wrapper {
+        gap: 10px;
+        padding: 8px;
+        max-width: 400px;
+    }
+
+    .game-container .location-wrapper .current-location-wrapper {
+        font-size: 11px;
+    }
+
+    .game-container .location-wrapper .current-location-wrapper .current-location {
+        font-size: 12px;
+        text-shadow: 0 0 7px #41f867;
+    }
+
+    .game-container .location-wrapper .locations {
+        gap: 15px;
+    }
+
+    .game-container .location-wrapper .locations .location-button {
+        padding: 3px 5px;
+        font-size: 11px;
+        border-radius: 5px;
+    }
+
+    .game-container .event-log-container .event-log-wrapper {
+        width: 378px;
+        padding: 8px 8px 10px 8px;
+    }
+
+    .game-container .event-log-container .event-log-wrapper .events {
+        max-height: 120px;
+        font-size: 11px;
+    }
+}
+
+@media screen and (max-width:500px) {
+    .action-button {
+        border-radius: 4px;
+        padding: 2px 3px;
+        font-size: 8px;
+    }
+
+    .name-and-bars {
+        gap: 3px;
+    }
+
+    .hp-bar-wrapper {
+        gap: 3px;
+        font-size: 7px;
+    }
+
+    .hp-bar {
+        width: 60px;
+    }
+
+    .avatar-and-stats {
+        gap: 5px;
+    }
+
+    .avatar img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .stats {
+        padding: 2px 3px;
+        gap: 0px;
+        border-radius: 3px
+    }
+
+    .stat {
+        font-size: 7px;
+    }
+
+    .game-container {
+        max-width: 300px;
+        gap: 10px;
+        border-radius: 20px;
+        padding: 10px 0;
+    }
+
+    .game-container .header-container {
+        gap: 5px;
+    }
+
+    .game-container .header-container .heading {
+        font-size: 16px;
+    }
+
+    .game-container .header-container .heading .heading-eng {
+        font-size: 17px;
+    }
+
+    .game-container .character-container {
+        gap: 15px;
+    }
+
+    .character-wrapper.left {
+        margin-left: 10px;
+    }
+
+    .character-wrapper {
+        gap: 5px;
+    }
+
+    .game-container .character-container .character-wrapper .name-and-bars .player-name {
+        font-size: 10px;
+    }
+
+    .game-container .character-container .character-wrapper .name-and-bars .xp-bar-wrapper {
+        gap: 3px;
+        font-size: 7px;
+    }
+
+    .game-container .character-container .character-wrapper .name-and-bars .xp-bar-wrapper .xp-bar {
+        width: 60px;
+    }
+
+    .game-container .character-container .character-wrapper .inventory {
+        gap: 3px;
+    }
+
+    .game-container .character-container .character-wrapper .inventory .inventory-description {
+        font-size: 9px;
+    }
+
+    .game-container .character-container .character-wrapper .inventory .inventory-items {
+        padding: 5px;
+        border-radius: 3px;
+        gap: 3px;
+    }
+
+    .game-container .character-container .character-wrapper .inventory .inventory-items .inventory-item {
+        border-radius: 2px;
+        font-size: 7px;
+    }
+
+    .game-container .character-container .character-wrapper.right {
+        margin-right: 10px;
+    }
+
+    .game-container .character-container .character-wrapper .name-and-bars .enemy-name {
+        font-size: 10px;
+    }
+
+    .game-container .character-container .character-wrapper .avatar-and-stats.right {
+        margin-top: 4px;
+    }
+
+    .game-container .character-container .character-wrapper .rest-description {
+        padding: 2px 2px;
+        font-size: 7px;
+    }
+
+    .game-container .action-buttons-container {
+        gap: 10px;
+    }
+
+    .game-container .location-wrapper {
+        gap: 7px;
+        border-radius: 3px;
+        padding: 5px 5px;
+        max-width: 300px;
+    }
+
+    .game-container .location-wrapper .current-location-wrapper {
+        font-size: 9px;
+    }
+
+    .game-container .location-wrapper .current-location-wrapper .current-location {
+        font-size: 8px;
+        text-shadow: 0 0 5px #41f867;
+    }
+
+    .game-container .location-wrapper .locations {
+        gap: 5px 8px;
+    }
+
+    .game-container .location-wrapper .locations .location-button {
+        padding: 2px 4px;
+        font-size: 8px;
+        border-radius: 4px;
+
+    }
+
+    .game-container .event-log-container .event-log-wrapper {
+        border-radius: 4px;
+        width: 270px;
+        padding: 5px 5px 8px 5px;
+    }
+
+    .game-container .event-log-container .event-log-wrapper .events {
+        max-height: 85px;
+        font-size: 8px;
+    }
+}
