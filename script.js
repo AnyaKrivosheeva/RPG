@@ -86,14 +86,14 @@ const locations = {                   // локации
     },
     "Kopatych-house": {
         name: "дом Копатыча",
-        background: "images/kopatych-house.webp",
+        background: "images/kopatych-house2.jpg",
         alt: "Огород Копатыча",
         isSafeZone: false,
         description: "Копатыч отправился к себе домой, но обнаружил на огороде заросли Некультурного сорняка! Он очень быстро размножается, так не пойдёт! Приступаем к прополке!<br>Твой ход!",
     },
     "Nyusha-house": {
         name: "дом Нюши",
-        background: "images/nyusha-house.webp",
+        background: "images/nyusha-house2.jpg",
         alt: "Домик Нюши",
         isSafeZone: false,
         description: "Нюша в отчаянии просит тебя помочь ей избавиться от Хищного цветка, которого она вырастила случайно по незнанию. У него и зубы есть, укуси меня пчела!<br>Твой ход!",
